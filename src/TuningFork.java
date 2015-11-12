@@ -10,7 +10,6 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
  public class TuningFork {
-     private AudioFormat audioFormat;
      private SourceDataLine line;
      private Timer timer;
      private byte[] buffer;
@@ -20,7 +19,8 @@ import java.util.concurrent.TimeUnit;
         }
 
      public boolean play(double freq,int dur) throws LineUnavailableException
-        {   audioFormat = new AudioFormat(44100, 8, 1, true, true);
+        {
+            AudioFormat audioFormat = new AudioFormat(44100, 8, 1, true, true);
             line = AudioSystem.getSourceDataLine(audioFormat);
             line.open(audioFormat);
             line.start();

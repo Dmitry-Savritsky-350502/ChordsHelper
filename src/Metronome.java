@@ -12,8 +12,6 @@ import java.util.TimerTask;
 public class Metronome {
     private Double chosenSpeed;
     private MediaPlayer tickPlayer;
-    private Media chosenSound;
-    private String tickPath;
     private Timer timer;
     public Metronome()
     {
@@ -21,8 +19,8 @@ public class Metronome {
 
     public void play (double speed,String name)  {
         chosenSpeed = speed;
-        tickPath=name;
-        chosenSound = new Media(new File(tickPath).toURI().toString());
+        String tickPath = name;
+        Media chosenSound = new Media(new File(tickPath).toURI().toString());
         tickPlayer = new MediaPlayer(chosenSound);
         tickPlayer.setVolume(1.0);
         tickPlayer.setCycleCount(1);

@@ -1,11 +1,12 @@
 /**
- * Created by Дмитрий on 29.10.2015.
+ * Created by пїЅпїЅпїЅпїЅпїЅпїЅпїЅ on 29.10.2015.
  */
 import java.lang.*;
 public class Chord {
    private String name;
    private String tableName;
    private Integer[] applicature;
+   private Boolean valid;
    public Chord()
     {   name="Unknown";
         applicature=new Integer[6];
@@ -20,6 +21,7 @@ public class Chord {
     public Chord(String n,String tn)
     {   name=n;
         tableName=tn;
+        valid=true;
     }
     public String getName()
     {
@@ -33,6 +35,10 @@ public class Chord {
     {
         return applicature;
     }
+    public Boolean getValid()
+    {
+        return valid;
+    }
     public void setName(String n)
     {
         name=n;
@@ -44,5 +50,9 @@ public class Chord {
     public void setApplicature(Integer[] app)
     {
         applicature=app;
+    }
+    public void setValid(Boolean v)
+    {
+        valid=v;
     }
 }
