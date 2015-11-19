@@ -1,27 +1,42 @@
-/**
- * Created by ������� on 29.10.2015.
- */
 import java.lang.*;
+/**
+ * Chord class is used to store attributes of guitar chord
+ *
+ * @author Dmitry Savritsky
+ */
 public class Chord {
+    /**
+     * Name of the chord
+     */
    private String name;
+    /**
+     * Name of the table(note) for which chord is belongs to
+     */
    private String tableName;
+    /**
+     * Applicature of chord
+     */
    private Integer[] applicature;
+    /**
+     * Flag of chord validation
+     */
    private Boolean valid;
-   public Chord()
-    {   name="Unknown";
-        applicature=new Integer[6];
-        for(int i=0;i<6;i++)
-            applicature[i]=0;
-    }
-   public Chord(String n,String tn,Integer[] app)
-   {   name=n;
-       tableName=tn;
-       applicature=app;
-   }
+    /**
+     *
+     * @param n name of chord
+     * @param tn table name(name of note, for which chord is belongs to)
+     */
     public Chord(String n,String tn)
     {   name=n;
         tableName=tn;
         valid=true;
+        applicature=new Integer[6];
+        applicature[0]=0;
+        applicature[1]=0;
+        applicature[2]=0;
+        applicature[3]=0;
+        applicature[4]=0;
+        applicature[5]=0;
     }
     public String getName()
     {

@@ -1,6 +1,5 @@
 
 import javafx.scene.control.Alert;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -9,33 +8,30 @@ import java.sql.Statement;
 import java.util.Vector;
 
 /**
- * Created by Дмитрий on 29.10.2015.
+ * Database class is used for reading applicatures of chords from chords database
+ *
+ * @author Dmitry Savritsky
  */
 public class Database {
-    private String path;
+    /**
+     * Statement, returned by java.sql.connection.createStatement() method
+     */
     private Statement statement;
-
+    /**
+     * @param p relative path to the database
+     */
     public Database(String p) throws SQLException,ClassNotFoundException
-    {   path=p;
-        initialize();
+    {
+        initialize(p);
     }
-
-    public Vector<Chord> getChords(Vector<Chord> chords) throws SQLException
+    /**
+     * @param chords guitar chords, which we need to find
+     * @param tones guitar notes
+     * @return Vector of founded chords
+     */
+    public Vector<Chord> getChords(Vector<Chord> chords,Vector<String> tones) throws SQLException
     {
         Vector<Chord> tempChordsArray=new Vector<>();
-        Vector<String> tones=new Vector<>();
-        tones.add("A");
-        tones.add("A#");
-        tones.add("B");
-        tones.add("C");
-        tones.add("C#");
-        tones.add("D");
-        tones.add("D#");
-        tones.add("E");
-        tones.add("F");
-        tones.add("F#");
-        tones.add("G");
-        tones.add("G#");
 
         for (Chord chord1 : chords) {
             if (tones.indexOf(chord1.getTableName()) == -1)
@@ -61,19 +57,22 @@ public class Database {
             if (chord.getValid())
                 tempChordsArray.add(chord);
         }
-
         checkChords(chords);
-
         return tempChordsArray;
     }
-
-    private boolean initialize() throws SQLException,ClassNotFoundException
+    /**
+     * Initializes database connection
+     * @param path relative path to the sqlite database
+     */
+    private void initialize(String path) throws SQLException,ClassNotFoundException
     {   Class.forName("org.sqlite.JDBC");
         Connection bd = DriverManager.getConnection("jdbc:sqlite:" + path);
         statement= bd.createStatement();
-        return true;
     }
-
+    /**
+     * Check chords, which we don't found
+     * @param ch vector of chords
+     */
     public void checkChords(Vector<Chord> ch)
     {
         String notFound="";
@@ -85,7 +84,6 @@ public class Database {
                 flag++;
             }
         }
-
         if(notFound.length()!=0) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Warning");
@@ -97,13 +95,4 @@ public class Database {
             alert.showAndWait();
         }
     }
-
-    /*public static void CloseDB() throws ClassNotFoundException, SQLException
-    {
-        conn.close();
-        statmt.close();
-        resSet.close();
-
-        System.out.println("Соединения закрыты");
-    }*/
 }

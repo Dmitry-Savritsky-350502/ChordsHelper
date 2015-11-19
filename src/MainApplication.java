@@ -1,7 +1,3 @@
-/**
- * Created by Дмитрий on 29.10.2015.
- */
-
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -28,21 +24,43 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-
 import javax.sound.sampled.LineUnavailableException;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.sql.SQLException;
 import java.util.Vector;
 
-
+/**
+ * MainApplication class is the main class for JavaFX application
+ *
+ * @author Dmitry Savritsky
+ */
 public class MainApplication extends Application {
+    /**
+     * Main stage of the application
+     */
     private Stage mainStage;
+    /**
+     * Scene used to work in transponer mode
+     */
     private Scene trasponerScene;
+    /**
+     * Scene used to work in tuning-fork mode
+     */
     private Scene tuningForkScene;
+    /**
+     * Scene used to work in metronome mode
+     */
     private Scene metronomeScene;
     private TuningFork tuningFork;
     private Metronome metronome;
+    /**
+     * Default path to music files
+     */
     private String MUSIC_PATH="Resources/Metronome/";
+    /**
+     * Default path to music files
+     */
     private Database db;
     private ChordControl chordControl;
 
@@ -57,7 +75,10 @@ public class MainApplication extends Application {
     public void setActiveMetronomeScene()//переходим на сцену метронома
     {mainStage.setScene(metronomeScene);
     }
-
+    /**
+     * Initializes scene to work in trasponer mode
+     * @return generated scene
+     */
     private Scene initTransponerScene()
     {   Button increaseTone,decreaseTone,search;
         TextField typeChords;
@@ -65,9 +86,7 @@ public class MainApplication extends Application {
         Label defaultChords,transposedChords,enterChords;
         Label transposeModeLabel,metronomeModeLabel,tuningForkModeLabel;
         Tab transposeMode,metronomeMode,tuningForkMode;
-
         TabPane tabs;
-
 
         ScrollPane defaultChordsViewScrollPane=new ScrollPane();
         defaultChordsViewScrollPane.setMaxSize(560,280);
@@ -79,7 +98,8 @@ public class MainApplication extends Application {
 
         try {
             db=new Database("Resources/Database/Chords.db");
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -113,7 +133,7 @@ public class MainApplication extends Application {
             public void handle(ActionEvent event) {
                 try {
                     chordControl.increaseTone();
-                    chordControl.setTransponedChords(db.getChords(chordControl.getTransponedChords()));
+                    chordControl.setTransponedChords(db.getChords(chordControl.getTransponedChords(),chordControl.getStandardTones()));
                     transposedChordsViewScrollPane.setContent(drawTransponed());//draw default chords
                     transposedChordsViewScrollPane.setHvalue(0);
                 } catch (SQLException e) {
@@ -132,7 +152,7 @@ public class MainApplication extends Application {
             public void handle(ActionEvent event) {
                 try {
                     chordControl.decreaseTone();
-                    chordControl.setTransponedChords(db.getChords(chordControl.getTransponedChords()));
+                    chordControl.setTransponedChords(db.getChords(chordControl.getTransponedChords(),chordControl.getStandardTones()));
                     transposedChordsViewScrollPane.setContent(drawTransponed());//draw default chords
                     transposedChordsViewScrollPane.setHvalue(0);
                 } catch (SQLException e) {
@@ -249,7 +269,7 @@ public class MainApplication extends Application {
                     increaseTone.setDisable(false);
                     decreaseTone.setDisable(false);
                     chordControl.setDefaultChords(parseEnteredNames(typeChords.getText()));
-                    chordControl.setDefaultChords(db.getChords(chordControl.getDefaultChords()));//get default chords
+                    chordControl.setDefaultChords(db.getChords(chordControl.getDefaultChords(),chordControl.getStandardTones()));//get default chords
                     chordControl.setTransponedChords(chordControl.getDefaultChords());
                     chordControl.setTone(0);
                     defaultChordsViewScrollPane.setContent(drawDefault());//draw default chords
@@ -264,7 +284,10 @@ public class MainApplication extends Application {
 
         return new Scene(pane);
     }
-
+    /**
+     * Initializes scene to work in tuning-fork mode
+     * @return generated scene
+     */
     private Scene initTuningForkScene()
     {
         Label transposeModeLabel,metronomeModeLabel,tuningForkModeLabel;
@@ -403,7 +426,10 @@ public class MainApplication extends Application {
 
         return new Scene(pane);
     }
-
+    /**
+     * Initializes scene to work in metronome mode
+     * @return generated scene
+     */
     private Scene initMetronomeScene() throws InterruptedException
     {
         Label transposeModeLabel,metronomeModeLabel,tuningForkModeLabel;
@@ -455,7 +481,7 @@ public class MainApplication extends Application {
         seeSpeed.setFont(Font.font("Arial", FontWeight.SEMI_BOLD, FontPosture.ITALIC, 16));
         seeSpeed.setAlignment(Pos.CENTER);
 
-        speed = new Slider(1, 300, 1);
+        speed = new Slider(1, 120, 1);
         speed.setBlockIncrement(1);
         speed.setOrientation(Orientation.HORIZONTAL);
         speed.valueProperty().addListener(new ChangeListener<Number>() {
@@ -474,7 +500,28 @@ public class MainApplication extends Application {
 
         File soundsDirectory=new File(MUSIC_PATH);
         ObservableList<String> list=FXCollections.observableArrayList();
-        File[] musicFiles=soundsDirectory.listFiles();
+
+        FilenameFilter fileNameFilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if(name.lastIndexOf('.')>0)
+                {
+                    // get last index for '.' char
+                    int lastIndex = name.lastIndexOf('.');
+
+                    // get extension
+                    String str = name.substring(lastIndex);
+
+                    // match path name extension
+                    if(str.equals(".wav"))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        File[] musicFiles=soundsDirectory.listFiles(fileNameFilter);
         for(File file : musicFiles)
         {
             list.add(file.getName());
@@ -546,7 +593,11 @@ public class MainApplication extends Application {
 
         return new Scene(pane);
     }
-
+    /**
+     * Parses entered names
+     * @param names names of the entered chords
+     * @return vector with parsed names
+     */
     public Vector<Chord> parseEnteredNames(String names) {
         Vector<Chord> chords = new Vector<>();
         int flag=0;
@@ -575,10 +626,14 @@ public class MainApplication extends Application {
         return chords;
     }
 
-    public Canvas drawDefault()
+    /**
+     * Draws chord on canvas
+     * @param chordVector vector of chords that we need to draw
+     * @return canvas with the images
+     */
+    public Canvas drawChord(Vector<Chord> chordVector)
     {
         int min;
-
         int offsetX=20;
         int offsetY=80;
         int fretSize=36;
@@ -588,16 +643,16 @@ public class MainApplication extends Application {
         int grifSize=stringOffset*7;
         int chordHSize=grifSize+stringOffset*4;
 
-        int count=chordControl.getDefaultChords().size();
-        for(int f=0;f<chordControl.getDefaultChords().size();f++)
+        int count=chordVector.size();
+        for(int f=0;f<chordVector.size();f++)
         {
-            if(!chordControl.getDefaultChords().get(f).getValid())
+            if(!chordVector.get(f).getValid())
                 count--;
         }
         Canvas canvas=new Canvas(count*chordHSize,280);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        for(Chord temp : chordControl.getDefaultChords() ) {
+        for(Chord temp : chordVector ) {
             if (temp.getValid()) {
                 gc.setStroke(Color.BLACK);
                 gc.setLineWidth(4);
@@ -623,9 +678,6 @@ public class MainApplication extends Application {
                         gc.fillOval(offsetX + stringOffset * (6 - i) - (circleRadius / 2), offsetY - (fretSize / 2) + fretSize * (tempBuf[i] - min+1) - circleRadius / 2, circleRadius, circleRadius);
                     }
                 gc.setLineWidth(2);
-                gc.setFont(new Font("Arial", 24));
-                gc.setTextAlign(TextAlignment.CENTER);//draw name of the chord
-                gc.strokeText(temp.getName(), offsetX + (grifSize / 2), offsetY - 40);
 
                 gc.setFont(new Font("Arial", 12));
                 for(Integer j=0;j<tempBuf.length;j++)//draw applicature
@@ -645,78 +697,50 @@ public class MainApplication extends Application {
         }
         return canvas;
     }
-
+    /**
+     * Draws default chord on canvas
+     * @return canvas with chords
+     */
+    public Canvas drawDefault()
+    {   int offsetX=20;
+        int offsetY=80;
+        int stringOffset=20;
+        int grifSize=stringOffset*7;
+        Canvas temp = drawChord(chordControl.getDefaultChords());
+        GraphicsContext gc = temp.getGraphicsContext2D();
+        for (Chord chord : chordControl.getDefaultChords()) {
+            gc.setFont(new Font("Arial", 24));
+            gc.setTextAlign(TextAlignment.CENTER);//draw name of the chord
+            gc.strokeText(chord.getName(), offsetX + (grifSize / 2), offsetY - 40);
+            offsetX += grifSize + 2*stringOffset;
+        }
+        return temp;
+    }
+    /**
+     * Draws default chord on canvas
+     * @return canvas with chords
+     */
     public Canvas drawTransponed()
-    {   int min;
-
+    {
+        String tempString;
         int offsetX=20;
         int offsetY=80;
-        int fretSize=36;
         int stringOffset=20;
-        double circleRadius=16;
-        int fretsSize=fretSize*5;
         int grifSize=stringOffset*7;
-        int chordHSize=grifSize+stringOffset*4;
-
-        int count=chordControl.getTransponedChords().size();
-        for(int f=0;f<chordControl.getTransponedChords().size();f++)
-        {
-            if(!chordControl.getTransponedChords().get(f).getValid())
-                count--;
+        Canvas temp = drawChord(chordControl.getTransponedChords());
+        GraphicsContext gc = temp.getGraphicsContext2D();
+        gc.setFont(new Font("Arial", 24));
+        gc.setTextAlign(TextAlignment.CENTER);//draw name of the chord
+        for (int i=0;i<chordControl.getTransponedChords().size(); i++) {
+            if(chordControl.getTone()>=0)
+            tempString=chordControl.getTransponedChords().get(i).getName()+"("+chordControl.getDefaultChords().get(i).getName()+"+"+chordControl.getTone()+")";
+            else tempString=chordControl.getTransponedChords().get(i).getName()+"("+chordControl.getDefaultChords().get(i).getName()+chordControl.getTone()+")";
+            gc.strokeText(tempString, offsetX + (grifSize / 2), offsetY - 40);
+            offsetX += grifSize + 2*stringOffset;
         }
-        Canvas canvas=new Canvas(count*chordHSize,280);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-
-        for(int cnt=0; cnt<chordControl.getTransponedChords().size();cnt++) {
-            if (chordControl.getTransponedChords().get(cnt).getValid()) {
-                gc.setStroke(Color.BLACK);
-                gc.setLineWidth(4);
-                gc.strokeRect(offsetX, offsetY, grifSize, fretsSize);//draw rectangle for the chord
-
-                gc.setLineWidth(2);
-                for (int i = 1; i < 7; i++)
-                    gc.strokeLine(offsetX + stringOffset * i, offsetY, offsetX + stringOffset * i, offsetY + fretsSize);//draw strings
-
-                for (int i = 1; i < 5; i++)
-                    gc.strokeLine(offsetX, offsetY + fretSize * i, offsetX + grifSize, offsetY + fretSize * i);//draw frets
-
-                Integer[] tempBuf = chordControl.getTransponedChords().get(cnt).getApplicature();//save applicature of the chord
-                min = 13;
-                for (Integer j : tempBuf) {
-                    if (j != -1 && j!=0 && j < min)
-                        min = j;
-                }
-                gc.setFill(Color.RED);
-                for (int i = 0; i < 6; i++)//draw red circles
-                    if (tempBuf[i] != -1 && tempBuf[i] != 0) {
-                        gc.strokeOval(offsetX + stringOffset * (6 - i) - (circleRadius / 2), offsetY - (fretSize / 2) + fretSize * (tempBuf[i] - min+1) - circleRadius / 2, circleRadius, circleRadius);
-                        gc.fillOval(offsetX + stringOffset * (6 - i) - (circleRadius / 2), offsetY - (fretSize / 2) + fretSize * (tempBuf[i] - min+1) - circleRadius / 2, circleRadius, circleRadius);
-                    }
-                gc.setLineWidth(2);
-                gc.setFont(new Font("Arial", 24));
-                gc.setTextAlign(TextAlignment.CENTER);//draw name of the chord
-                if (chordControl.getTone()>=0)
-                gc.strokeText(chordControl.getTransponedChords().get(cnt).getName()+"("+" +"+chordControl.getTone().toString()+")", offsetX + (grifSize / 2), offsetY - 40);
-                else gc.strokeText(chordControl.getTransponedChords().get(cnt).getName()+"("+chordControl.getTone().toString()+")", offsetX + (grifSize / 2), offsetY - 40);
-
-                gc.setFont(new Font("Arial", 12));
-                for(Integer j=0;j<tempBuf.length;j++)//draw applicature
-                {
-                    if(tempBuf[j]==-1)
-                        gc.strokeText("x",offsetX+stringOffset*(6-j),offsetY-10);
-                    else gc.strokeText(tempBuf[j].toString(),offsetX+stringOffset*(6-j),offsetY-10);
-                }
-
-                for(int j=0;j<5;j++)//draw frets
-                {
-                    gc.strokeText(Integer.toString(min+j),offsetX-10,offsetY+fretSize/2+fretSize*j);
-                }
-
-                offsetX += grifSize + 2*stringOffset;
-            }
-        }
-        return canvas;
+        return temp;
     }
+
 
     @Override
     public void start(Stage primaryStage) {
