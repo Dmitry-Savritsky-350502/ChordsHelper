@@ -27,6 +27,7 @@ public class Database {
     /**
      * @param chords guitar chords, which we need to find
      * @param tones guitar notes
+     * @throws SQLException when chord.getTableName isn't match any of String object in Vector<String> tones
      * @return Vector of founded chords
      */
     public Vector<Chord> getChords(Vector<Chord> chords,Vector<String> tones) throws SQLException
@@ -63,10 +64,12 @@ public class Database {
     /**
      * Initializes database connection
      * @param path relative path to the sqlite database
+     * @throws SQLException when connection to the database isn't established
      */
     private void initialize(String path) throws SQLException,ClassNotFoundException
     {   Class.forName("org.sqlite.JDBC");
         Connection bd = DriverManager.getConnection("jdbc:sqlite:" + path);
+        //if(!bd.isValid(0)) throw new SQLException("Can't open chord database!");
         statement= bd.createStatement();
     }
     /**

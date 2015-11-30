@@ -26,6 +26,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javax.sound.sampled.LineUnavailableException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.sql.SQLException;
 import java.util.Vector;
@@ -57,7 +58,7 @@ public class MainApplication extends Application {
     /**
      * Default path to music files
      */
-    private String MUSIC_PATH="Resources/Metronome/";
+    final private String MUSIC_PATH="Resources/Metronome/";
     /**
      * Default path to music files
      */
@@ -79,7 +80,7 @@ public class MainApplication extends Application {
      * Initializes scene to work in trasponer mode
      * @return generated scene
      */
-    private Scene initTransponerScene()
+    private Scene initTransponerScene() throws SQLException
     {   Button increaseTone,decreaseTone,search;
         TextField typeChords;
         VBox vertical,chordsVbox;
@@ -100,8 +101,12 @@ public class MainApplication extends Application {
             db=new Database("Resources/Database/Chords.db");
         }
         catch (SQLException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+           Alert al=new Alert(Alert.AlertType.ERROR);
+            al.setTitle("Database error!");
+            al.setContentText(e.getMessage());
+            al.showAndWait();
+        }
+        catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -430,7 +435,7 @@ public class MainApplication extends Application {
      * Initializes scene to work in metronome mode
      * @return generated scene
      */
-    private Scene initMetronomeScene() throws InterruptedException
+    private Scene initMetronomeScene() throws InterruptedException,FileNotFoundException
     {
         Label transposeModeLabel,metronomeModeLabel,tuningForkModeLabel;
         Tab transposeMode,metronomeMode,tuningForkMode;
@@ -631,7 +636,7 @@ public class MainApplication extends Application {
      * @param chordVector vector of chords that we need to draw
      * @return canvas with the images
      */
-    public Canvas drawChord(Vector<Chord> chordVector)
+    private Canvas drawChord(Vector<Chord> chordVector)
     {
         int min;
         int offsetX=20;
@@ -733,8 +738,8 @@ public class MainApplication extends Application {
         gc.setTextAlign(TextAlignment.CENTER);//draw name of the chord
         for (int i=0;i<chordControl.getTransponedChords().size(); i++) {
             if(chordControl.getTone()>=0)
-            tempString=chordControl.getTransponedChords().get(i).getName()+"("+chordControl.getDefaultChords().get(i).getName()+"+"+chordControl.getTone()+")";
-            else tempString=chordControl.getTransponedChords().get(i).getName()+"("+chordControl.getDefaultChords().get(i).getName()+chordControl.getTone()+")";
+            tempString=chordControl.getTransponedChords().get(i).getName()+"("+chordControl.getDefaultChords().get(i).getName()+" +"+chordControl.getTone()+")";
+            else tempString=chordControl.getTransponedChords().get(i).getName()+"("+chordControl.getDefaultChords().get(i).getName()+" "+chordControl.getTone()+")";
             gc.strokeText(tempString, offsetX + (grifSize / 2), offsetY - 40);
             offsetX += grifSize + 2*stringOffset;
         }
@@ -745,7 +750,6 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-
             trasponerScene=this.initTransponerScene();
             tuningForkScene=this.initTuningForkScene();
             metronomeScene=this.initMetronomeScene();
@@ -762,8 +766,12 @@ public class MainApplication extends Application {
             mainStage.show();
 
         }
-        catch(Exception e)
-        {System.out.print(e.getMessage());
+
+        catch (Exception e) {
+            Alert al=new Alert(Alert.AlertType.ERROR);
+            al.setContentText(e.getMessage());
+            al.showAndWait();
+            return;
         }
     }
 

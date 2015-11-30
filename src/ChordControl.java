@@ -127,6 +127,7 @@ public class ChordControl {
     }
     public void setTone(int t)
     {
+        if(tone >= -11 && tone <=11)
         tone=t;
     }
     public Vector<String> getStandardTones()

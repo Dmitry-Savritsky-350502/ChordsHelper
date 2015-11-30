@@ -2,6 +2,7 @@
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,8 +28,9 @@ public class Metronome {
      * Plays music with chosen speed and music path
      * @param speed Speed in hit/min
      * @param path Path to the chosen music sample
+     * @throws FileNotFoundException when there is no files in directory Resources/Metronome/
      */
-    public void play (double speed,String path)  {
+    public void play (double speed,String path){
         chosenSpeed = speed;
         Media chosenSound = new Media(new File(path).toURI().toString());
         tickPlayer = new MediaPlayer(chosenSound);
