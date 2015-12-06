@@ -606,6 +606,7 @@ public class MainApplication extends Application {
     public Vector<Chord> parseEnteredNames(String names) {
         Vector<Chord> chords = new Vector<>();
         int flag=0;
+        if(names.length()==0) return chords;
         String[] array= names.split("\\s+");
         String tt="";
         for (String anArray : array) {

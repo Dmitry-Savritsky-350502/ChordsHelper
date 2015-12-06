@@ -87,6 +87,14 @@ public class Database {
                 flag++;
             }
         }
+        if(ch.size()==0)
+        {   Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning");
+            alert.setHeaderText(null);
+            String text = "Chords field is empty! Please, enter names of some chords.";
+            alert.setContentText(text);
+            alert.showAndWait();
+        }
         if(notFound.length()!=0) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Warning");
